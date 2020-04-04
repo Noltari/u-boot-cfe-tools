@@ -14,8 +14,9 @@ def create_header(args, size):
 def create_output(args):
 	in_st = os.stat(args.input_file)
 	in_size = in_st.st_size
+	align_size = (in_size + args.align - 1) & ~(args.align - 1);
 
-	header = create_header(args, in_size)
+	header = create_header(args, align_size)
 	print(header)
 
 	in_f = open(args.input_file, 'r+b')
@@ -31,6 +32,12 @@ def main():
 	global args
 
 	parser = argparse.ArgumentParser(description='')
+
+	parser.add_argument('--align',
+		dest='align',
+		action='store',
+		type=auto_int,
+		help='Align')
 
 	parser.add_argument('--entry-addr',
 		dest='entry_addr',
@@ -61,11 +68,14 @@ def main():
 	if (not args.input_file) or (not args.output_file):
 		parser.print_help()
 
-	if not args.load_addr:
-		args.load_addr = 0x80600000
+	if not args.align:
+		args.align = 16
 
 	if not args.entry_addr:
 		args.entry_addr = 0x80600000
+
+	if not args.load_addr:
+		args.load_addr = 0x80600000
 
 	create_output(args)
 
